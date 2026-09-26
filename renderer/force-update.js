@@ -3,7 +3,7 @@
 (() => {
   const params = new URLSearchParams(location.search || '');
   const msg = params.get('msg') || 'A critical update is required to continue using KnightTrader BloFin.';
-  const url = params.get('url') || 'https://mknight2690-sys.github.io/knighttrader-blo-site/';
+  const url = params.get('url') || 'https://mknight2690-sys.github.io/knighttrader-poly-site/';
   const ver = params.get('ver') || '';
   const min = params.get('min') || '';
 

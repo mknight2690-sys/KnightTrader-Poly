@@ -203,7 +203,7 @@ async function init() {
     const ds = await window.kt.getDashboardStatus();
     if (ds.ready && ds.gatewayRunning) {
       setDashboardState(true, true, true);
-      loadDashboard(ds.url || 'http://127.0.0.1:9119');
+      loadDashboard(ds.url || 'http://127.0.0.1:9219');
       maybeStartupAutoSwitch();
     } else {
       setDashboardState(false, false);
@@ -375,7 +375,7 @@ async function startHermesDashboardUi() {
       return;
     }
     setDashboardState(true, true, !!result.gatewayRunning);
-    loadDashboard(result.url || 'http://127.0.0.1:9119');
+    loadDashboard(result.url || 'http://127.0.0.1:9219');
   } catch (e) {
     setDashboardState(false, false);
     el.dashboardStatus.textContent = '✗ ' + (e.message || 'Failed to start');
@@ -1019,7 +1019,7 @@ el.btnInstallHermes.addEventListener('click', async () => {
       const ds = await window.kt.getDashboardStatus();
       if (ds.running || ds.ready) {
         setDashboardState(!!ds.running, !!ds.ready, !!ds.gatewayRunning);
-        if (ds.ready) loadDashboard(ds.url || 'http://127.0.0.1:9119');
+        if (ds.ready) loadDashboard(ds.url || 'http://127.0.0.1:9219');
       }
     } catch (e) {}
   } else if (result.partial) {
@@ -1088,7 +1088,7 @@ el.btnCopyPrompt.addEventListener('click', () => {
 
 // Dashboard controls
 el.btnReloadDash.addEventListener('click', () => { el.hermesWebview.reload(); });
-el.btnOpenDashExternal.addEventListener('click', () => window.kt.openExternal('http://127.0.0.1:9119'));
+el.btnOpenDashExternal.addEventListener('click', () => window.kt.openExternal('http://127.0.0.1:9219'));
 
 // Autoscroll toggle
 el.btnAutoscroll.addEventListener('click', () => {
@@ -1116,7 +1116,7 @@ const LINKS = {
   'link-blofin-dashboard': 'https://polymarket.com',
   'link-blofin-api-page': 'https://docs.polymarket.com',
   'link-nous-portal-settings': NOUS_PORTAL_URL,
-  'link-hermes-dashboard': 'http://127.0.0.1:9119',
+  'link-hermes-dashboard': 'http://127.0.0.1:9219',
   'link-hermes-docs': 'https://hermes-agent.nousresearch.com/docs/integrations/nous-portal',
   'link-nous-portal': NOUS_PORTAL_URL,
   'link-blofin-api': 'https://docs.polymarket.com',

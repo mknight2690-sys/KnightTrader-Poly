@@ -531,7 +531,7 @@ async function quitAndInstallFromMain() {
 // FAILS OPEN — it does not block. We never want a dead network to lock a
 // user out of a working app. The next time they're online, the manifest is
 // fetched and the block takes effect.
-const UPDATE_MANIFEST_URL = 'https://mknight2690-sys.github.io/knighttrader-blo-site/manifest.json';
+const UPDATE_MANIFEST_URL = 'https://mknight2690-sys.github.io/knighttrader-poly-site/manifest.json';
 let forceUpdateWindow = null;
 let forceUpdateTimer = null;
 
@@ -580,8 +580,8 @@ async function checkForcedUpdate() {
 
 function showForceUpdateWindow(manifest) {
   if (forceUpdateWindow && !forceUpdateWindow.isDestroyed()) return;
-  const msg = String(manifest.forceUpdateMessage || 'A critical update is required to continue using KnightTrader BloFin.');
-  const url = String(manifest.forceUpdateUrl || 'https://mknight2690-sys.github.io/knighttrader-blo-site/');
+  const msg = String(manifest.forceUpdateMessage || 'A critical update is required to continue using KnightTrader Poly.');
+  const url = String(manifest.forceUpdateUrl || 'https://mknight2690-sys.github.io/knighttrader-poly-site/');
   const min = String(manifest.forceUpdateFrom || '');
   const ver = app.getVersion();
   const query = new URLSearchParams({ msg, url, min, ver }).toString();
