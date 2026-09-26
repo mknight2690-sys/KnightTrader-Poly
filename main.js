@@ -815,6 +815,12 @@ function getBlohunterBridge() {
     blohunterBridge = new BlohunterBridge({
       userDataPath: app.getPath('userData'),
       log: (...args) => appendLog(`[Trading] ${args.map(String).join(' ')}`, 'info'),
+      getPolyCreds: () => ({
+        apiKey: storeData.blofin?.apiKey,
+        secretKey: storeData.blofin?.secretKey,
+        passphrase: storeData.blofin?.passphrase,
+        privateKey: storeData.blofin?.privateKey,
+      }),
     });
   }
   return blohunterBridge;
@@ -847,6 +853,7 @@ function bootstrapBlofinFromCompendium() {
 }
 
 async function syncBlohunterCredentials() {
+  seedPolymarketCredentials();
   bootstrapBlofinFromCompendium();
   const bridge = getBlohunterBridge();
   if (!storeData.blofin?.apiKey) return;

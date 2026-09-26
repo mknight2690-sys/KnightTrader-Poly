@@ -489,9 +489,10 @@ function createChromeMock(storage, { dispatchRuntimeMessage, log = () => {} }) {
 }
 
 class BlohunterBridge {
-  constructor({ userDataPath, log = () => {} }) {
+  constructor({ userDataPath, log = () => {}, getPolyCreds = null }) {
     this.log = log;
     this.userDataPath = userDataPath;
+    this.getPolyCreds = typeof getPolyCreds === 'function' ? getPolyCreds : null;
     this.hermesHome = path.join(userDataPath, 'hermes');
     this.storagePath = path.join(userDataPath, 'blohunter-storage.json');
     this.storage = new BlohunterStorage(this.storagePath);
@@ -512,24 +513,36 @@ class BlohunterBridge {
     this.livePollTimer = null;
   }
 
+  resolveStoredPolyCreds() {
+    const fromStore = this.getPolyCreds ? this.getPolyCreds() : null;
+    if (!fromStore || typeof fromStore !== 'object') return null;
+    return {
+      apiKey: String(fromStore.apiKey || '').trim(),
+      secret: String(fromStore.secretKey || fromStore.secret || '').trim(),
+      passphrase: String(fromStore.passphrase || '').trim(),
+      privateKey: String(fromStore.privateKey || '').trim(),
+    };
+  }
+
   getBlofinCreds() {
     this.storage.load();
     const session = this.storage.pick('session', ['apiKey', 'secret', 'passphrase', 'privateKey']);
+    const stored = this.resolveStoredPolyCreds();
     const pending = this.pendingCreds || {};
     const pendingKey = String(pending.apiKey || '').trim();
     if (pendingKey) {
       return {
         apiKey: pendingKey,
-        secret: String(pending.secretKey || pending.secret || '').trim(),
-        passphrase: String(pending.passphrase || '').trim(),
-        privateKey: String(pending.privateKey || session.privateKey || '').trim(),
+        secret: String(pending.secretKey || pending.secret || session.secret || stored?.secret || '').trim(),
+        passphrase: String(pending.passphrase || session.passphrase || stored?.passphrase || '').trim(),
+        privateKey: String(pending.privateKey || session.privateKey || stored?.privateKey || '').trim(),
       };
     }
     return {
-      apiKey: String(session.apiKey || '').trim(),
-      secret: String(session.secret || '').trim(),
-      passphrase: String(session.passphrase || '').trim(),
-      privateKey: String(session.privateKey || '').trim(),
+      apiKey: String(session.apiKey || stored?.apiKey || '').trim(),
+      secret: String(session.secret || stored?.secret || '').trim(),
+      passphrase: String(session.passphrase || stored?.passphrase || '').trim(),
+      privateKey: String(session.privateKey || stored?.privateKey || '').trim(),
     };
   }
 
@@ -556,7 +569,11 @@ class BlohunterBridge {
     const nextSecret = String(secretKey || '').trim();
     const nextPass = String(passphrase || '').trim();
     this.storage.load();
-    const existing = this.storage.pick('session', ['apiKey', 'secret', 'passphrase']);
+    const existing = this.storage.pick('session', ['apiKey', 'secret', 'passphrase', 'privateKey']);
+    const stored = this.resolveStoredPolyCreds();
+    const resolvedPrivateKey = String(
+      privateKey || existing.privateKey || stored?.privateKey || ''
+    ).trim();
     const hasIncoming = !!(nextKey && nextSecret && nextPass);
     const hasExisting = !!(
       String(existing.apiKey || '').trim()
@@ -565,12 +582,11 @@ class BlohunterBridge {
     );
     if (!hasIncoming) {
       if (hasExisting) {
-        const kept = this.storage.pick('session', ['privateKey']);
         this.pendingCreds = {
           apiKey: existing.apiKey,
           secretKey: existing.secret,
           passphrase: existing.passphrase,
-          privateKey: String(kept.privateKey || '').trim(),
+          privateKey: resolvedPrivateKey,
           demoMode: this.demoMode,
         };
       }
@@ -581,7 +597,7 @@ class BlohunterBridge {
       apiKey: nextKey,
       secretKey: nextSecret,
       passphrase: nextPass,
-      privateKey: String(privateKey || '').trim(),
+      privateKey: resolvedPrivateKey,
       demoMode: this.demoMode,
     };
     this.liveBlofinCache = null;
@@ -591,7 +607,7 @@ class BlohunterBridge {
       apiKey: nextKey,
       secret: nextSecret,
       passphrase: nextPass,
-      privateKey: String(privateKey || '').trim(),
+      privateKey: resolvedPrivateKey,
       vault_unlocked: true,
       vault_unlocked_at: now,
     });
@@ -1258,8 +1274,9 @@ class BlohunterBridge {
       data.balances.totalAvailable = liveAvailable;
     }
     const equity = Number(data.balances.totalEquity);
-    const liveBalance = accountRows.length > 0 || liveAvailable > 0 || equity > 0;
-    if (liveBalance && accountRows.length > 0) {
+    const mergedAccountRows = Array.isArray(data.balances.account) ? data.balances.account : [];
+    const liveBalance = mergedAccountRows.length > 0 || liveAvailable > 0 || equity > 0;
+    if (liveBalance && mergedAccountRows.length > 0) {
       const now = await this.markBlofinApiHealthy();
       if (data.profile && typeof data.profile === 'object') {
         data.profile.blofinApiOk = true;

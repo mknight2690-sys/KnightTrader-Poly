@@ -41,7 +41,7 @@ WHAT EACH CALL IS
 - Price, midpoint, spread, tick-size are public on the same host.
 - Gamma discovers markets: https://gamma-api.polymarket.com
 - Data API reads the account: https://data-api.polymarket.com/value?user=FUNDER and /positions?user=FUNDER
-- Geoblock: GET https://polymarket.com/api/geoblock. If blocked, do not send an order. Write the reason and end the tick.
+- Geoblock: GET https://polymarket.com/api/geoblock. You need "blocked": false before any live order. If blocked is true, fix routing yourself (see GEOBLOCK section). Never stop the tick just because the first geoblock read was blocked.
 
 UNIVERSE — ALL 5-MINUTE CRYPTO UP/DOWN
 These markets are binary: did the coin finish the 5-minute window up or down?
@@ -90,6 +90,36 @@ ORDER RULES
 - Sell or hold to resolution. For a market inside its last 5 minutes, do not open a new position unless the edge test passed. Do not chase a price above 0.97 or below 0.03.
 - Cancel your own resting orders that belong to a window that has ended.
 
+GEOBLOCK — NEVER STOP THE TICK; FIX THE ROUTE YOURSELF
+Polymarket blocks some regions. A blocked region is not permission to quit. You do not ask a human to toggle VPN. Automate it every time.
+
+Check (no auth):
+  GET https://polymarket.com/api/geoblock
+You need "blocked": false before any live order.
+
+If blocked is true:
+1) Append the country/reason from the JSON to polymarket_5m.md. Do not exit the tick.
+2) Route outbound traffic through an allowed country using WireGuard configs on this PC:
+   Folder: %USERPROFILE%\.knighttrader\vpn\ on Windows, or ~/.knighttrader/vpn/ on Mac/Linux.
+   Try in this order: MX.conf (Mexico), RO.conf (Romania), NL.conf (Netherlands), JP.conf (Japan).
+   Do NOT use PL.conf, SG.conf, or any Canada config — Polymarket blocks those for new orders.
+3) Connect with subprocess (wait up to 20s per attempt):
+   Windows:
+     "C:\Program Files\WireGuard\wireguard.exe" /installtunnelservice "<full path to conf>"
+     If not in Program Files, try Program Files (x86). After connect, sleep 5 seconds.
+   Mac/Linux:
+     wg-quick up "<full path to conf>"
+4) Prove the route changed:
+   GET https://ipapi.co/json/ or https://ipwho.is/
+   country_code must be MX, RO, NL, or JP before you trust the route.
+5) Re-run GET https://polymarket.com/api/geoblock.
+   If still blocked, disconnect that tunnel and try the next .conf in the list.
+6) If every allowed .conf was tried and geoblock is still true:
+   Finish the tick in research mode — scan markets, paper-score edges, read/write lessons, prove USDC balance — but send NO live orders this tick.
+   Do not end the cron early. A geoblocked tick still completes steps 3–7 below.
+
+If blocked is false: proceed with live orders when an edge exists.
+
 LEARNING FILE (required)
 Path: the Hermes lessons folder, file polymarket_5m.md
 Before trading, read it. After the tick, append:
@@ -100,7 +130,7 @@ Before trading, read it. After the tick, append:
 Never write the private key, API secret, or passphrase into that file.
 
 TICK ORDER
-1) Geoblock check. If blocked, stop.
+1) Geoblock check and auto-route if needed (GEOBLOCK section). Never stop here — loop VPN configs until blocked is false or all allowed configs are exhausted, then continue in research-only mode if still blocked.
 2) Build the client against the Polymarket wallet (signature_type 3, funder = proxyWallet). Prove it: USDC balance, then Data API value for that wallet. Both must return numbers.
 3) Read the lessons file. Apply it.
 4) List every live 5-minute crypto up/down market, plus any crypto up/down ending within 300 seconds.
