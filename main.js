@@ -888,13 +888,19 @@ function readStackedCredentialFile(filePath) {
 
 function seedPolymarketCredentials() {
   if (!storeData.blofin) storeData.blofin = { apiKey: '', secretKey: '', passphrase: '', privateKey: '', demoMode: false };
-  if (storeData.settings?.polyCredsSeeded) return false;
+  const needKey = !String(storeData.blofin.apiKey || '').trim();
+  const needSecret = !String(storeData.blofin.secretKey || '').trim();
+  const needPass = !String(storeData.blofin.passphrase || '').trim();
+  const needPk = !String(storeData.blofin.privateKey || '').trim();
+  if (!needKey && !needSecret && !needPass && !needPk) return false;
   const api = readStackedCredentialFile('C:\\Users\\mknig\\OneDrive\\Documents\\Polymarket API 2.txt');
   const pk = readStackedCredentialFile('C:\\Users\\mknig\\OneDrive\\Documents\\1B Polymarket Private Key.txt');
-  if (api.apikey) storeData.blofin.apiKey = api.apikey;
-  if (api.secret) storeData.blofin.secretKey = api.secret;
-  if (api.passphrase) storeData.blofin.passphrase = api.passphrase;
-  if (pk.privatekey) storeData.blofin.privateKey = pk.privatekey;
+  if (needKey && api.apikey) storeData.blofin.apiKey = api.apikey;
+  if (needSecret && api.secret) storeData.blofin.secretKey = api.secret;
+  if (needPass && api.passphrase) storeData.blofin.passphrase = api.passphrase;
+  if (needPk && pk.privatekey) storeData.blofin.privateKey = pk.privatekey;
+  const filled = String(storeData.blofin.privateKey || '').trim() && String(storeData.blofin.apiKey || '').trim();
+  if (!filled && storeData.settings?.polyCredsSeeded) return false;
   storeData.settings = { ...(storeData.settings || {}), polyCredsSeeded: true };
   saveStore(storeData);
   appendLog('📂 Polymarket credentials loaded from your Documents files', 'success');

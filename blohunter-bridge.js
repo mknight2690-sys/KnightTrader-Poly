@@ -513,6 +513,8 @@ class BlohunterBridge {
   }
 
   getBlofinCreds() {
+    this.storage.load();
+    const session = this.storage.pick('session', ['apiKey', 'secret', 'passphrase', 'privateKey']);
     const pending = this.pendingCreds || {};
     const pendingKey = String(pending.apiKey || '').trim();
     if (pendingKey) {
@@ -520,11 +522,9 @@ class BlohunterBridge {
         apiKey: pendingKey,
         secret: String(pending.secretKey || pending.secret || '').trim(),
         passphrase: String(pending.passphrase || '').trim(),
-        privateKey: String(pending.privateKey || '').trim(),
+        privateKey: String(pending.privateKey || session.privateKey || '').trim(),
       };
     }
-    this.storage.load();
-    const session = this.storage.pick('session', ['apiKey', 'secret', 'passphrase', 'privateKey']);
     return {
       apiKey: String(session.apiKey || '').trim(),
       secret: String(session.secret || '').trim(),
@@ -565,10 +565,12 @@ class BlohunterBridge {
     );
     if (!hasIncoming) {
       if (hasExisting) {
+        const kept = this.storage.pick('session', ['privateKey']);
         this.pendingCreds = {
           apiKey: existing.apiKey,
           secretKey: existing.secret,
           passphrase: existing.passphrase,
+          privateKey: String(kept.privateKey || '').trim(),
           demoMode: this.demoMode,
         };
       }
@@ -786,19 +788,16 @@ class BlohunterBridge {
       await new Promise((resolve) => setTimeout(resolve, 800));
       await this.applyDesktopTradingGate();
     }
-    let equity = Number(snapshot?.data?.balances?.totalEquity || 0);
-    let settled = Number(snapshot?.data?.balances?.settledEquity || equity);
-    // Authoritative fallback: a direct signed BloFin REST read. The desk
-    // snapshot is frequently 0 (SSE 401 / vault not unlocked in background),
-    // and the cron last_tick value is stale — which is exactly what produced
-    // the wrong "seeded at 19.56" equity curve. Prefer the live REST balance.
-    if (!(equity > 0)) {
-      const live = await this.fetchLiveBlofinAccount();
-      if (live && live.totalEquity > 0) {
-        equity = live.totalEquity;
-        settled = live.totalEquity - live.totalUnrealized;
-        this.log(`[BloHunter] Equity curve: using direct BloFin equity=${equity.toFixed(4)} USDT`);
-      }
+    let equity = 0;
+    let settled = 0;
+    const live = await this.fetchLiveBlofinAccount();
+    if (live && live.totalEquity > 0) {
+      equity = live.totalEquity;
+      settled = live.totalEquity - live.totalUnrealized;
+      this.log(`[Poly] Equity curve: Polymarket wallet ${equity.toFixed(4)} USDC`);
+    } else {
+      equity = Number(snapshot?.data?.balances?.totalEquity || 0);
+      settled = Number(snapshot?.data?.balances?.settledEquity || equity);
     }
     // Final fallback to cron's last_tick.json if both the desk snapshot and the
     // direct REST read came back empty.
@@ -828,7 +827,7 @@ class BlohunterBridge {
     const now = Date.now();
     const merged = mergeEquityRangeAnchors(existing, equity, settled, now);
     this.storage.setArea('local', { [ACCOUNT_EQUITY_HISTORY_KEY]: merged });
-    this.log(`[BloHunter] Equity curve seeded at ${equity.toFixed(2)} USDT across 1D/1W/1M/3M (${merged.length} points)`);
+    this.log(`[Poly] Equity curve seeded at ${equity.toFixed(2)} USDC across 1D/1W/1M/3M (${merged.length} points)`);
     this.nudgeEquityChart();
   }
 
@@ -1059,6 +1058,61 @@ class BlohunterBridge {
   // margin, and open positions. This is the fallback that fixes "equity wrong,
   // exposure wrong, open positions showing zero" when the embedded desk's
   // background sync loop / gateway SSE isn't delivering live data.
+  async recordPolyEquityPoint(equity, baseline) {
+    const numericEquity = Number(equity);
+    const numericBaseline = Number(baseline);
+    const now = Date.now();
+    if (!(numericEquity > 0)) return [];
+    this.storage.load();
+    const stored = this.storage.pick('local', [ACCOUNT_EQUITY_HISTORY_KEY]);
+    let history = normalizeEquityPoints(stored[ACCOUNT_EQUITY_HISTORY_KEY] || []);
+    history = history.filter((point) => Math.abs(point.equity - numericEquity) / numericEquity <= 0.5);
+    const last = history[history.length - 1];
+    const settled = Number.isFinite(numericBaseline) && numericBaseline > 0 ? numericBaseline : numericEquity;
+    if (last && now - last.at < 60 * 1000) {
+      history[history.length - 1] = { ...last, equity: numericEquity, baseline: settled };
+    } else {
+      history.push({ at: now, equity: numericEquity, baseline: settled });
+    }
+    await this.storage.setArea('local', { [ACCOUNT_EQUITY_HISTORY_KEY]: history });
+    return history;
+  }
+
+  async applyPolymarketDesk(data, live) {
+    const settled = live.totalEquity - live.totalUnrealized;
+    data.balances = {
+      account: live.accountRows,
+      totalEquity: live.totalEquity,
+      totalAvailable: live.totalAvailable,
+      totalUnrealized: live.totalUnrealized,
+      settledEquity: settled,
+    };
+    data.exposure = {
+      openCount: live.openCount,
+      totalMargin: live.totalMargin,
+      totalUnrealized: live.totalUnrealized,
+    };
+    data.openPositions = this.mapLiveOpenPositions(live.openPositions || []);
+    data.openPositionsUnavailable = false;
+    data.recentClosed = this.mapLiveClosedPositions(live.closedPositions || []);
+    data.closedTrades48h = data.recentClosed.filter(
+      (row) => row.closedAt && row.closedAt >= Date.now() - 48 * 60 * 60 * 1000
+    );
+    data.performance = {
+      dailyPnl: 0,
+      monthlyPnl: 0,
+    };
+    data.errorMessage = '';
+    const history = await this.recordPolyEquityPoint(live.totalEquity, settled);
+    data.equityHistory = mergeEquityRangeAnchors(history, live.totalEquity, settled);
+    if (!data.profile || typeof data.profile !== 'object') data.profile = {};
+    data.profile.blofinApiOk = true;
+    data.profile.blofinApiKnown = true;
+    data.profile.blofinApiFresh = true;
+    data.profile.blofinMonitoringSuspended = false;
+    data.profile.exchange = 'Polymarket';
+  }
+
   async fetchLiveBlofinAccount() {
     const now = Date.now();
     if (this.liveBlofinCache && now - this.liveBlofinCacheAt < LIVE_BLOFIN_CACHE_TTL_MS) {
@@ -1069,6 +1123,7 @@ class BlohunterBridge {
     const secret = creds.secret;
     const passphrase = creds.passphrase;
     if (!apiKey || !secret || !passphrase || !creds.privateKey) {
+      this.log('[Poly] account read skipped: private key is missing from the saved credentials');
       return null;
     }
     try {
@@ -1153,36 +1208,12 @@ class BlohunterBridge {
       // the dashboard still shows live equity / positions instead of nothing.
       const live = await this.fetchLiveBlofinAccount();
       if (live) {
-        const recentClosed = this.mapLiveClosedPositions(live.closedPositions || []);
-        return {
-          ok: true,
-          data: {
-            balances: {
-              account: live.accountRows,
-              totalEquity: live.totalEquity,
-              totalAvailable: live.totalAvailable,
-              totalUnrealized: live.totalUnrealized,
-              settledEquity: live.totalEquity - live.totalUnrealized,
-            },
-            openPositions: this.mapLiveOpenPositions(live.openPositions),
-            recentClosed,
-            closedTrades48h: recentClosed.filter(
-              (row) => row.closedAt && row.closedAt >= Date.now() - 48 * 60 * 60 * 1000
-            ),
-            exposure: {
-              openCount: live.openCount,
-              totalMargin: live.totalMargin,
-              totalUnrealized: live.totalUnrealized,
-            },
-            recentActivity: this.readHermesActivityEntries(),
-            profile: {
-              blofinApiOk: true,
-              blofinApiKnown: true,
-              blofinApiFresh: true,
-              blofinMonitoringSuspended: false,
-            },
-          },
+        const data = {
+          recentActivity: this.readHermesActivityEntries(),
+          profile: {},
         };
+        await this.applyPolymarketDesk(data, live);
+        return { ok: true, data };
       }
       return result;
     }
@@ -1206,47 +1237,12 @@ class BlohunterBridge {
     const deskHasClosed = Array.isArray(data.recentClosed) && data.recentClosed.length > 0;
     const live = await this.fetchLiveBlofinAccount();
     if (live) {
-      if (live.totalEquity > 0) {
-        data.balances.totalEquity = live.totalEquity;
-      } else if (!(deskEquity > 0)) {
-        data.balances.totalEquity = live.totalEquity;
-      }
-      if (live.totalAvailable > 0 || !(Number(data.balances.totalAvailable) > 0)) {
-        data.balances.totalAvailable = live.totalAvailable;
-      }
-      if (Number.isFinite(live.totalUnrealized)) {
-        data.balances.totalUnrealized = live.totalUnrealized;
-      }
-      data.balances.settledEquity = live.totalEquity - live.totalUnrealized;
-      if (live.openPositions.length > 0 || !deskHasPositions) {
-        data.openPositions = this.mapLiveOpenPositions(live.openPositions);
-        data.openPositionsUnavailable = false;
-        if (data.errorMessage && /open positions/i.test(String(data.errorMessage))) {
-          data.errorMessage = '';
-        }
-      }
-      if (live.closedPositions?.length && !deskHasClosed) {
-        data.recentClosed = this.mapLiveClosedPositions(live.closedPositions);
-        data.closedTrades48h = data.recentClosed.filter(
-          (row) => row.closedAt && row.closedAt >= Date.now() - 48 * 60 * 60 * 1000
-        );
-      }
-      if (!Array.isArray(data.balances.account) || data.balances.account.length === 0) {
-        data.balances.account = live.accountRows;
-      }
-      if (!data.exposure || typeof data.exposure !== 'object') {
-        data.exposure = {};
-      }
-      if (live.openCount > 0 || !deskHasPositions) {
-        data.exposure.openCount = live.openCount;
-        data.exposure.totalMargin = live.totalMargin;
-        data.exposure.totalUnrealized = live.totalUnrealized;
-      }
+      await this.applyPolymarketDesk(data, live);
     }
 
-    // When BloHunter stream snapshots are stale, use Hermes cron balance truth
-    // only as a last resort (the direct BloFin read above is preferred).
-    if (lastTick) {
+    // When the Polymarket read is unavailable, use Hermes cron balance truth
+    // only as a last resort.
+    if (!live && lastTick) {
       if (!(Number(data.balances.totalEquity) > 0) && lastTick.equity > 0) {
         data.balances.totalEquity = lastTick.equity;
       }
