@@ -1500,7 +1500,7 @@ class BlohunterBridge {
   }
 
   injectDashboardHtml(html) {
-    html = html.replace(/<title>BloHunter Connect<\/title>/i, '<title>KnightTrader</title>');
+    html = html.replace(/<title>BloHunter Connect<\/title>/i, '<title>KnightTrader Poly</title>');
     if (!html.includes('__kt__/chrome-shim.js')) {
       html = html.replace(
         /<head([^>]*)>/i,

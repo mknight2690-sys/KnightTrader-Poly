@@ -1352,9 +1352,9 @@ function buildTray() {
       image = nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gQWESo1yI6KEwAAAFZJREFUWMPt1zEOACAIA0D+/6cj2RkhsZkx29nZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnYIAQYAw9wJf1QAAAABJRU5ErkJggg==');
     }
     appTray = new Tray(image);
-    appTray.setToolTip('KnightTrader Blofin');
+    appTray.setToolTip('KnightTrader Poly');
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Show KnightTrader Blofin', click: () => restoreFromTray() },
+      { label: 'Show KnightTrader Poly', click: () => restoreFromTray() },
       { label: 'Quit', click: () => quitFromTray() },
     ]);
     appTray.setContextMenu(contextMenu);
@@ -2952,7 +2952,8 @@ function createWindow() {
       // restore (webviews stopped repainting and never caught up).
       backgroundThrottling: false,
     },
-    title: 'KnightTrader Blofin'
+    title: 'KnightTrader Poly',
+    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
   });
   try { mainWindow.webContents.setBackgroundThrottling(false); } catch (_) {}
   mainWindow.loadFile('renderer/index.html');
@@ -3035,7 +3036,7 @@ function handleBhProtocol(request) {
     let data = fs.readFileSync(served.filePath);
     if (served.injectSkin) {
       let html = data.toString('utf8');
-      html = html.replace(/<title>BloHunter Connect<\/title>/i, '<title>KnightTrader Blofin</title>');
+      html = html.replace(/<title>BloHunter Connect<\/title>/i, '<title>KnightTrader Poly</title>');
       if (!html.includes('__kt__/kt-skin.css')) {
         html = html.replace(
           '</head>',

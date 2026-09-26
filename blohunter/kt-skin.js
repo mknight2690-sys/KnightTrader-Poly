@@ -1,5 +1,5 @@
 (() => {
-  const BRAND = 'KnightTrader';
+  const BRAND = 'KnightTrader Poly';
 
   function rebrandVisible() {
     document.title = BRAND;
@@ -29,7 +29,10 @@
 
   function walkText(node) {
     if (node.nodeType === Node.TEXT_NODE) {
-      let next = String(node.nodeValue || '').replace(/BloHunter(?:\s+Connect)?/gi, BRAND);
+      let next = String(node.nodeValue || '')
+        .replace(/KnightTrader Blofin/gi, BRAND)
+        .replace(/BloHunter(?:\s+Connect)?/gi, BRAND)
+        .replace(/BloFin/gi, 'Polymarket');
       next = next
         .replace(/Live extension log/gi, 'Hermes cron log')
         .replace(/Recent Activity/gi, 'Hermes Activity');

@@ -505,7 +505,7 @@ function renderDashboard(snapshot) {
   ]);
 
   $('metaLinePrimary').textContent =
-    `Exchange: ${profile.exchange} | BloFin: ${getBlofinStatusText(profile)} | API Lock: ${formatCountryName(profile.apilockCountry) || 'not set'}`;
+    `Exchange: Polymarket | ${getBlofinStatusText(profile)}`;
   renderSecondaryMetaLine(displayProfile, errorMessage || '');
   // KnightTrader: voice is opens/closes only — skip signal/trading transition speech.
   renderLivePill(displayProfile, Boolean(errorMessage));
@@ -608,7 +608,7 @@ function renderError(message, profile = null) {
   if (profile) {
     const displayProfile = getDashboardDisplayProfile(profile);
     $('metaLinePrimary').textContent =
-      `Exchange: ${profile.exchange} | BloFin: ${getBlofinStatusText(profile)} | API Lock: ${formatCountryName(profile.apilockCountry) || 'not set'}`;
+      `Exchange: Polymarket | ${getBlofinStatusText(profile)}`;
     renderSecondaryMetaLine(displayProfile, message);
     renderLivePill(displayProfile);
   } else {
@@ -783,14 +783,14 @@ const POSITION_ACTIONS = {
 // failed manual action. Anything unmapped (already-friendly vault prompts or raw
 // BloFin messages) passes through unchanged.
 const POSITION_ACTION_ERROR_TEXT = {
-  'no-position': 'That position is no longer open on BloFin.',
+  'no-position': 'That position is no longer open on Polymarket.',
   'no-balance': 'Not enough margin available.',
   'no-instrument-metadata': "Couldn't read the market's contract details — try again.",
   'sizing-failed': "Couldn't size the add — try again.",
   blacklist: "This market isn't supported.",
   'invalid-add-request': 'Invalid request.',
   'invalid-close-request': 'Invalid request.',
-  'positions-read-failed': "Couldn't reach BloFin — try again in a moment.",
+  'positions-read-failed': "Couldn't reach Polymarket — try again in a moment.",
 };
 
 function friendlyPositionActionError(msg, fallback) {

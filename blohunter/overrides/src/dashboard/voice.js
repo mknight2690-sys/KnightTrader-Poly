@@ -20,25 +20,25 @@ export const DASHBOARD_VOICE_MESSAGES = {
   'trade-risk-adjustment-retry': 'Risk adjustment delayed for',
   'trade-risk-adjustment-retry-abandoned': 'Risk adjustment abandoned for',
   'trade-state-hold': 'moved to HOLD protection',
-  'hold-resumed-to-active': 'returned to active BloHunter control',
-  'v3-metadata-reacquired': 'restored under active BloHunter signal',
+  'hold-resumed-to-active': 'returned to active KnightTrader control',
+  'v3-metadata-reacquired': 'restored under active KnightTrader signal',
   'close-blocked': 'close blocked under five percent, HOLD protection active',
   'close-blocked-recovery': 'close blocked under five percent, Recovery active',
   'recovery-armed': 'moved to Recovery',
   'recovery-step': 'Recovery step placed on',
   'recovery-reset': 'Recovery reset for',
-  'recovery-resumed-to-server-management': 'left Recovery and returned to active BloHunter control',
+  'recovery-resumed-to-server-management': 'left Recovery and returned to active KnightTrader control',
   liquidated: 'Liquidation detected on',
   'apilock-blocked': 'Trading blocked by API lock',
   'apilock-restored': 'API lock restored, trading can resume',
-  'awaiting-snapshot': 'Waiting for fresh BloHunter snapshot',
-  'signal-failed': 'BloHunter signal disconnected',
-  'signal-restored': 'BloHunter signal restored',
+  'awaiting-snapshot': 'Waiting for fresh KnightTrader snapshot',
+  'signal-failed': 'KnightTrader signal disconnected',
+  'signal-restored': 'KnightTrader signal restored',
 };
 
 export const DASHBOARD_WELCOME_VOICE_MESSAGES = {
-  active: 'Welcome to KnightTrader Blofin. Trading Active.',
-  default: 'Welcome to KnightTrader Blofin.',
+  active: 'Welcome to KnightTrader Poly. Trading Active.',
+  default: 'Welcome to KnightTrader Poly.',
 };
 
 export const DASHBOARD_TRADING_VOICE_MESSAGES = {
