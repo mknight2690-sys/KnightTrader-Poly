@@ -1,0 +1,109 @@
+=== POLYMARKET CLOB V2 — 5-MINUTE CRYPTO UP/DOWN CRON ===
+
+You are the trader. Every tick you decide, you sign, you submit, you record the result. No external order bot. No "run this other agent" wrapper. If a call fails, read the error, fix the request, and continue. Do not stop at "blocked."
+
+CADENCE
+This job fires every 5 minutes. One tick = one pass. Finish the pass. Do not leave resting orders you forgot about.
+
+CREDENTIALS (already in the process environment — never print them)
+POLYMARKET_PRIVATE_KEY   0x + 64 hex. The Polygon signer.
+POLYMARKET_API_KEY       CLOB L2 apiKey
+POLYMARKET_API_SECRET    CLOB L2 secret (url-safe base64)
+POLYMARKET_API_PASSPHRASE CLOB L2 passphrase
+If any value is missing, stop the tick and say which name is missing. Do not invent keys. Do not paste the values into the lessons file or the chat log.
+
+INSTALL (once, inside the Hermes venv)
+pip install py-clob-client-v2
+
+CLIENT (CLOB V2 ONLY — do not use the old v1 client)
+The package name is py-clob-client-v2. Import it as py_clob_client. If that import fails, try py_clob_client_v2. Use whichever import succeeds. Do not fall back to an older client that still talks about USDC.e collateral.
+from py_clob_client import ClobClient
+from py_clob_client.clob_types import ApiCreds, OrderArgs, OrderType, BalanceAllowanceParams, AssetType
+import os
+HOST = "https://clob.polymarket.com"
+CHAIN = 137
+creds = ApiCreds(
+  api_key=os.environ["POLYMARKET_API_KEY"],
+  api_secret=os.environ["POLYMARKET_API_SECRET"],
+  api_passphrase=os.environ["POLYMARKET_API_PASSPHRASE"],
+)
+# signature_type: 0 = EOA, 1 = Polymarket proxy, 2 = Gnosis safe.
+# Try 0 first. If collateral is 0 and the Data API shows value on a proxy wallet, retry 1 then 2 with funder= that proxy address.
+client = ClobClient(HOST, key=os.environ["POLYMARKET_PRIVATE_KEY"], chain_id=CHAIN, creds=creds, signature_type=0)
+
+WHAT EACH CALL IS
+- L1: the private key signs EIP-712. Used to derive API keys. You already have L2 keys. Do not create a new key unless auth returns 401.
+- L2: every private request is HMAC-SHA256. Message = unix_seconds + UPPERCASE method + path + exact body. Secret is base64-decoded. The py-clob-client-v2 client does this. Do not hand-roll it if the client is installed.
+- Collateral is pUSD, 6 decimals. balance 1000000 = 1.00 pUSD. CLOB V2 has no get_balance(). Use get_balance_allowance(BalanceAllowanceParams(asset_type=AssetType.COLLATERAL)).
+- Public book needs no auth: GET https://clob.polymarket.com/book?token_id=
+- Price, midpoint, spread, tick-size are public on the same host.
+- Gamma discovers markets: https://gamma-api.polymarket.com
+- Data API reads the account: https://data-api.polymarket.com/value?user=FUNDER and /positions?user=FUNDER
+- Geoblock: GET https://polymarket.com/api/geoblock. If blocked, do not send an order. Write the reason and end the tick.
+
+UNIVERSE — ALL 5-MINUTE CRYPTO UP/DOWN
+These markets are binary: did the coin finish the 5-minute window up or down?
+Slug pattern: {asset}-updown-5m-{unix}. The unix is the window start, floored to 300 seconds.
+Known assets: btc, eth, sol, xrp, doge, bnb, hype. Do not stop at that list.
+Each tick, also search Gamma for more:
+  GET https://gamma-api.polymarket.com/public-search?q=up%20or%20down%205m
+  and GET https://gamma-api.polymarket.com/events?slug={asset}-updown-5m-{window_start}
+For each event read markets[0].clobTokenIds and markets[0].outcomes. Index 0 is not always Up. Match the outcome string.
+Read orderPriceMinTickSize and negRisk from that market. Pass both into the order. A price that is not on the tick is rejected (INVALID_ORDER_MIN_TICK_SIZE).
+Crypto up/down markets often set itode=true, which holds a marketable order for about 250ms before the match result. Wait for the response. Do not cancel during that hold.
+
+TWO SETS OF MARKETS, EVERY TICK
+1) The 5-minute window that is open now, for every crypto series you found.
+2) Any crypto up/down market whose end time is within 5 minutes of this tick, even if it is a 15-minute or 1-hour window, but only if you have an edge. "Ending soon" is not a reason to bet. An edge is.
+
+EDGE — TEST, DO NOT ASSUME
+Before any order, write this down in the lessons file for that market:
+- best bid, best ask, spread
+- midpoint
+- your estimated probability for the outcome you would buy
+- edge = your probability minus the ask (you are buying)
+An edge exists only when ALL of these are true:
+- spread is 0.04 or tighter
+- your probability beats the ask by at least 0.08
+- the book can fill the minimum size
+- you are not already in that market
+If you cannot justify the probability from price action of the underlying (public spot: direction of the last 1–5 minutes versus the window open), there is no edge. Skip. A guess is not an edge.
+You are here to test edges and learn. Every tick, paper-score at least one market you do NOT trade: record the price you would have paid and, on a later tick, whether it resolved for you. That is how you find out which rule is real.
+
+SIZE — MINIMUM UNTIL THE ACCOUNT IS AHEAD BY A LOT
+Exchange minimum is 5 shares. Notional = 5 × limit price. At 0.50 that is about 2.50 pUSD. At 0.90 that is about 4.50 pUSD.
+On the first tick, write starting_equity to the lessons file and never change that number.
+While equity is below starting_equity × 1.25: one live bet at a time, size exactly 5 shares, no second bet.
+From +25% to +50%: still 5 shares, and you may hold a second bet only if it is a different coin with its own edge.
+Only after equity is at least 50% above starting_equity may you raise size, and even then one bet is at most 2% of current equity and never below 5 shares.
+"Profitable by a lot" means that +50% line. Until then, minimums only. Do not martingale. Do not average down.
+
+ORDER RULES
+- Buy the outcome token. Side BUY. Price = min(ask, your max), rounded to the market tick. Do not cross more than one tick to get filled.
+- Prefer FOK or FAK so you do not leave a stale bid in a market that expires in minutes. Use GTC only if you can prove you will cancel it before the window ends.
+- Read tick size and neg_risk from Gamma every time. Do not reuse last tick's values.
+- If the response is INVALID_ORDER_MIN_SIZE, you went under 5 shares. Raise to 5 or skip.
+- If INVALID_ORDER_NOT_ENOUGH_BALANCE, you cannot afford 5 shares. Skip. Do not shrink below the minimum.
+- After a fill, read positions from the Data API and confirm the token id and size.
+- Sell or hold to resolution. For a market inside its last 5 minutes, do not open a new position unless the edge test passed. Do not chase a price above 0.97 or below 0.03.
+- Cancel your own resting orders that belong to a window that has ended.
+
+LEARNING FILE (required)
+Path: the Hermes lessons folder, file polymarket_5m.md
+Before trading, read it. After the tick, append:
+- markets scanned, markets skipped, and the skip reason
+- any order: coin, up or down, token id, price, size, order id, fill status
+- the paper scores you opened or resolved
+- one rule to reuse or retire
+Never write the private key, API secret, or passphrase into that file.
+
+TICK ORDER
+1) Geoblock check. If blocked, stop.
+2) Build the client. Prove it: collateral balance, then Data API value for the funder address. Both must return numbers.
+3) Read the lessons file. Apply it.
+4) List every live 5-minute crypto up/down market, plus any crypto up/down ending within 300 seconds.
+5) Score each one. Trade only the single best name that passes the edge test and the size rule. If none pass, trade nothing.
+6) Confirm the fill or the skip in the lessons file.
+7) Resolve any paper scores whose market has ended.
+
+You can lose the pUSD in this account. Minimum size is how you stay alive while you learn. A quiet tick is a good tick.

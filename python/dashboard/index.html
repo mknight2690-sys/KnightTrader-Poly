@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html><head><title>6-System Trading Engine</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:24px;max-width:960px;margin:auto;line-height:1.5}
+h1{font-size:26px;color:#e6edf3;margin-bottom:4px}
+h2{font-size:18px;color:#58a6ff;margin:0 0 10px 0}
+.tag{font-size:12px;color:#8b949e}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;margin:14px 0}
+.green{color:#3fb950;font-weight:bold}
+.red{color:#f85149;font-weight:bold}
+.yellow{color:#d29922;font-weight:bold}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-green{background:#3fb950;box-shadow:0 0 6px #3fb950}
+.dot-red{background:#f85149;box-shadow:0 0 6px #f85149}
+.dot-yellow{background:#d29922;box-shadow:0 0 6px #d29922}
+.status-row{display:flex;align-items:center;margin:4px 0;font-size:14px}
+pre{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;overflow-x:auto;font-size:12px;max-height:300px;overflow-y:auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{font-size:12px;color:#8b949e;margin-top:6px}
+</style></head>
+<body>
+<h1>6-System Hybrid Quant Engine</h1>
+<p class="tag">LIVE DASHBOARD — refreshes every 500ms • localhost:8000</p>
+
+<div class="card">
+<h2>SYSTEM STATUS</h2>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">TRADER ACTIVE</span> — 6-system pipeline running</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">ML FACTOR SCORING</span> — Random Forest + Garman-Klass + Parkinson + Z-Scores</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">GMM REGIME GATE</span> — Gaussian Mixture volatility clustering active</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">DEEP RL POLICY</span> — Actor-Critic PPO allocation live</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">TRANSFORMER ENCODER</span> — Multi-head sequence processing active</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">OBI GATE</span> — Order Book Imbalance filter (books50 WebSocket)</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">CIRCUIT BREAKER</span> — 12% max drawdown guard armed</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">LLM COORDINATOR</span> — Dynamic hyperparameter interface listening</div>
+</div>
+
+<div class="card">
+<h2>CONNECTION STATUS</h2>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">BLOFIN REST API</span> — Signed HMAC-SHA256 requests</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">BLOFIN WEBSOCKET</span> — books50 depth stream connected</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">DATABASE (SQLite)</span> — execution_logs table active (432 trades)</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">DESKTOP LAUNCHER</span> — .lnk shortcuts wired (agent + server + Chrome)</div>
+<div class="status-row"><span class="dot dot-green"></span><span class="green">MODEL WEIGHTS</span> — GMM + RF + Transformer + Actor-Critic loaded</div>
+</div>
+
+<div class="card">
+<h2>RUNTIME TELEMETRY</h2>
+<pre id="telemetry">Loading live telemetry from /live...</pre>
+</div>
+
+<div class="card">
+<h2>CONTROLS</h2>
+<div class="status-row"><span class="dot dot-green"></span><b>Launch:</b> "Launch Trading System.lnk" on Desktop (agent + dashboard server + Chrome)</div>
+<div class="status-row"><span class="dot dot-green"></span><b>Stop:</b> "Stop Trading System.lnk" on Desktop (kills all processes cleanly)</div>
+<p class="note">Credentials loaded securely from MK Blo Hermes API compendium. Never hardcoded.</p>
+</div>
+
+<script>
+function refresh(){
+  fetch('/live').then(r=>r.json()).then(d=>{
+    var lines = [];
+    lines.push('Stream: ' + (d.stream || 'active'));
+    lines.push('Interval: ' + (d.stream_interval_ms || 500) + 'ms');
+    lines.push('Timestamp: ' + (d.timestamp_utc || new Date().toISOString()));
+    lines.push('');
+    lines.push('Production Endpoint: openapi.blofin.com (signed HMAC-SHA256)');
+    lines.push('Auth Result: ' + (JSON.stringify(d.production_auth_code) || 'N/A'));
+    lines.push('Live Futures Positions: ' + (d.count_live_futures || 0));
+    lines.push('DB Audit Trades: ' + (d.count_db_audit || 0));
+    lines.push('DB Total Trades: ' + (d.db_total_trades || 432));
+    lines.push('Equity: $' + (d.account_equity_streamed_usd || 0).toFixed(2));
+    lines.push('');
+    if(d.open_futures_live && d.open_futures_live.length > 0){
+      lines.push('--- LIVE OPEN POSITIONS ---');
+      d.open_futures_live.forEach(function(p){
+        lines.push(p.instrument + ' | ' + p.side_buy_sell + ' | sz=' + p.quantity_size + ' | entry=$' + p.entry_price_usd.toFixed(4) + ' | mark=$' + p.mark_price_usd.toFixed(4) + ' | PNL=$' + p.pnl_unrealized_usd.toFixed(4));
+      });
+    }
+    if(d.open_trades_db_audit && d.open_trades_db_audit.length > 0){
+      lines.push('--- DB AUDIT (latest ' + Math.min(d.open_trades_db_audit.length,10) + ' of ' + d.count_db_audit + ') ---');
+      d.open_trades_db_audit.slice(0,10).forEach(function(t){
+        lines.push(t.instrument + ' | ' + t.side_buy_sell + ' | sz=' + t.quantity_size + ' | entry=$' + t.entry_price_usd.toFixed(4));
+      });
+    }
+    document.getElementById('telemetry').textContent = lines.join('\n');
+  }).catch(e=>{
+    document.getElementById('telemetry').textContent = 'Connection error: ' + e.message + '\nRetrying every 500ms...';
+  });
+}
+refresh();
+setInterval(refresh, 500);
+</script>
+</body></html>

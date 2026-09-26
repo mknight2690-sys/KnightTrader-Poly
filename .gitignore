@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist/asar_extract/
+KnightTraderdistasar_extract/
+.env
+*.log
+_howto_fragment.html
+_splice_howto.py
+_fix_labels.py
+_strip_vpn.py
+_tmp_*
+_poll_cron.js
+__pycache__/
+.pytest_cache/
+python/router/keys_*.txt

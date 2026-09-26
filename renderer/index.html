@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: http://127.0.0.1:* http://localhost:*; script-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* https://fonts.googleapis.com https://fonts.gstatic.com https://inference-api.nousresearch.com https://openapi.blofin.com https://demo-trading-openapi.blofin.com https://blohunter.com; frame-src 'self' http://127.0.0.1:* http://localhost:*; child-src 'self' http://127.0.0.1:* http://localhost:*;">
+  <title>KnightTrader Poly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+
+  <!-- Custom Titlebar -->
+  <div id="titlebar">
+    <div id="titlebar-drag">
+      <div class="tb-logo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z" fill="url(#tg)"/>
+          <path d="M9 12l2 2 4-4" stroke="#0b0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="tg" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f5c542"/><stop offset="100%" stop-color="#e8a020"/></linearGradient></defs>
+        </svg>
+      </div>
+      <span id="titlebar-title">KnightTrader Poly — Polymarket</span>
+    </div>
+    <div id="titlebar-controls">
+      <button id="btn-minimize">&#x2212;</button>
+      <button id="btn-maximize">&#x25A1;</button>
+      <button id="btn-close">&#x2715;</button>
+    </div>
+  </div>
+
+  <div id="app">
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div id="sidebar-brand">
+        <div class="brand-orb">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6l-8-4z" fill="url(#sg)"/>
+            <path d="M9 12l2 2 4-4" stroke="#0b0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs><linearGradient id="sg" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f5c542"/><stop offset="100%" stop-color="#e8a020"/></linearGradient></defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">KnightTrader Poly</span>
+          <span class="brand-sub">Hermes Launcher</span>
+        </div>
+      </div>
+
+      <div id="status-pill">
+        <div id="status-orb"></div>
+        <span id="status-label">Stopped</span>
+      </div>
+
+      <ul id="nav-list">
+        <li class="nav-item active" data-tab="howto">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>How-To</span>
+        </li>
+        <li class="nav-item" data-tab="setup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          <span>Setup</span>
+        </li>
+        <li class="nav-item" data-tab="hermes">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Hermes</span>
+          <span id="hermes-nav-badge" class="badge hidden">!</span>
+        </li>
+        <li class="nav-item" data-tab="trading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          <span>Trading</span>
+        </li>
+        <li class="nav-item" data-tab="logs">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Logs</span>
+          <span id="log-badge" class="badge hidden">0</span>
+        </li>
+        <li class="nav-item" data-tab="settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </li>
+      </ul>
+
+      <div id="sidebar-footer">
+        <div class="version-tag" id="sidebar-version">v1.2.1</div>
+        <button id="btn-open-blofin" class="link-btn">Polymarket ↗</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="content">
+      <div id="update-banner" class="update-banner hidden">
+        <div>
+          <div id="update-banner-title" class="update-banner-title">Update available</div>
+          <div id="update-banner-text" class="update-banner-text">Restart to install the latest version.</div>
+        </div>
+        <div class="update-banner-actions">
+          <button id="btn-restart-update" class="btn-primary">Restart & Update</button>
+          <button id="btn-dismiss-update" class="btn-secondary">Later</button>
+        </div>
+      </div>
+
+      <!-- ── Popup menu button ─────────────────────────────────── -->
+      <div id="popup-launcher" class="popup-launcher">
+        <button id="btn-popup-trigger" class="popup-trigger" aria-haspopup="true" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="18" r="1.5"/></svg>
+          <span>Menu</span>
+        </button>
+        <div id="popup-menu" class="popup-menu hidden" role="menu" aria-label="App menu">
+          <!-- Populated by setPopupOpen() in renderer/app.js -->
+        </div>
+      </div>
+      <!-- ── End popup menu button ─────────────────────────────── -->
+
+      <!-- ── HOW-TO TAB ─────────────────────────────────────────── -->
+      <section id="tab-howto" class="tab-panel active">
+        <div class="panel-header">
+          <h1>How-To</h1>
+          <p class="panel-sub">Do these steps in order. This guide is written for someone who has never done this before.</p>
+        </div>
+        <blockquote class="hero-quote">
+          <p>Take it slow and follow the How-To tab. Paste the four Polymarket values, install the assistant, and let the five-minute job run.</p>
+          <p>Then open the Hermes tab, start the dashboard and gateway if they are not already up, and use Open in browser to confirm the job is completing cycles. The Trading tab reads the Polymarket account those keys belong to.</p>
+          <p>That's it.</p>
+          <footer>—Matthew Knight, Founder, KnightTrader Poly</footer>
+        </blockquote>
+        <div class="howto-wrapper">
+
+          <div class="preflight">
+            <div class="preflight-title">Before you start — do not skip this</div>
+            <ol class="howto-list howto-list--tight">
+              <li>You need <strong>Windows 11</strong> or an <strong>Apple Silicon Mac</strong> on macOS 11 or later.</li>
+              <li>You need a <strong>Polymarket account</strong> that can hold <strong>pUSD</strong>. Start with an amount you can lose in full.</li>
+              <li>You need four values from that account: <strong>API key</strong>, <strong>secret</strong>, <strong>passphrase</strong>, and the <strong>wallet private key</strong>.</li>
+              <li>You need a <strong>Nous Portal</strong> key. Nous charges a one-time ~$5 credit top-up, paid to Nous, before it will create one.</li>
+              <li>Plan on <strong>30–60 minutes</strong> the first time. Keep the laptop plugged in.</li>
+              <li>If Polymarket blocks your own network, use Proton's free VPN and land in <strong>Mexico</strong> or <strong>Romania</strong> (step 3). Poland, Singapore, and a generic Canada server are not safe for new orders.</li>
+            </ol>
+            <div class="preflight-warn">A 5-minute crypto up/down contract can expire against you. The assistant is told to buy 5 shares — the exchange minimum — until the account is up 50% from its starting balance. That rule is not a promise that you will get there.</div>
+          </div>
+
+          <div class="steps-flow">
+
+            <div class="step-card">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <div class="step-title">Install KnightTrader Poly</div>
+                <div class="step-desc">This installer is separate from KnightTrader BloFin. Both can be installed. They do not share a data folder, a port, or a tray icon.</div>
+                <ol class="howto-list">
+                  <li>On Windows, double-click <strong>KnightTrader Poly Setup</strong> and finish the installer. Open <strong>KnightTrader Poly</strong> from the Start menu.</li>
+                  <li>On a Mac, open the <strong>.dmg</strong>, drag <strong>KnightTrader Poly</strong> into <strong>Applications</strong>, then right-click the app and choose <strong>Open</strong> if macOS says the developer cannot be verified.</li>
+                  <li>You should land on this <strong>How-To</strong> tab.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <div class="step-title">Keep this computer awake</div>
+                <div class="step-desc">The assistant only runs while this PC is on and online.</div>
+                <ol class="howto-list">
+                  <li>On Windows, open <strong>Settings → System → Power</strong> and set sleep to <strong>Never</strong> while plugged in.</li>
+                  <li>On a Mac, open <strong>System Settings → Lock Screen</strong> (or Energy) and turn off sleep while on power.</li>
+                  <li>Leave the app running. Closing the window keeps it in the tray.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <div class="step-title">Use a free Proton country Polymarket allows</div>
+                <div class="step-desc">Free Proton usually connects you to the Netherlands, Mexico, Canada, Singapore, Romania, Poland, or Japan. Polymarket does not treat those the same. This follows Polymarket's geographic restrictions page. Recheck before you leave the VPN on, because the list can change.</div>
+                <div class="step-desc"><strong>Use these.</strong> They are not on the restricted list, so new orders are allowed on the site and the API: <strong>Mexico</strong> and <strong>Romania</strong>.</div>
+                <div class="step-desc"><strong>Netherlands and Japan:</strong> the Polymarket website is close-only there, but Polymarket says the API itself is not restricted. This app sends orders through that API. Use them only after the check below says you are not blocked.</div>
+                <div class="step-desc"><strong>Do not use these for new orders.</strong> Close-only on both the site and the API, so a new order from that IP is rejected: <strong>Poland</strong> and <strong>Singapore</strong>.</div>
+                <div class="step-desc"><strong>Do not use a generic Canada server.</strong> Polymarket blocks Alberta, British Columbia, Ontario, and Quebec on both the site and the API. Free Proton does not show which province you landed in.</div>
+                <ol class="howto-list">
+                  <li>Open <strong>https://polymarket.com/api/geoblock</strong> before you turn a VPN on. If it says <strong>"blocked": false</strong>, skip Proton.</li>
+                  <li>If it says <strong>"blocked": true</strong>, install the free Proton VPN app, sign in, and connect to <strong>Mexico</strong> or <strong>Romania</strong>.</li>
+                  <li>If Mexico and Romania are not in the free server list, try <strong>Netherlands</strong> or <strong>Japan</strong>. Do not stop on Poland, Singapore, or Canada.</li>
+                  <li>Reload the geoblock page. Continue only when it says <strong>"blocked": false</strong>.</li>
+                  <li>Leave that Proton connection on while this app is running. If you disconnect and the check flips back to blocked, new orders from this PC will be rejected.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <div class="step-title">Create your Nous Portal API key</div>
+                <div class="step-desc">The model calls go through your Nous key. KnightTrader does not bill this.</div>
+                <ol class="howto-list">
+                  <li>Open <strong>portal.nousresearch.com</strong> and sign in.</li>
+                  <li>Add a one-time credit top-up of about <strong>$5</strong>, paid to Nous.</li>
+                  <li>Create an API key and copy the whole value.</li>
+                  <li>In this app, open <strong>Setup</strong>, paste it into the Nous field, and click <strong>Test AI Credentials</strong>.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">5</div>
+              <div class="step-body">
+                <div class="step-title">Put pUSD on Polymarket</div>
+                <div class="step-desc">The trading desk reads the Polymarket account you connect. Deposit only what you can lose.</div>
+                <ol class="howto-list">
+                  <li>Open <strong>polymarket.com</strong> and sign in to the account you will trade.</li>
+                  <li>Deposit <strong>pUSD</strong> using Polymarket's own deposit flow. Collateral on CLOB v2 is pUSD, not USDC.e.</li>
+                  <li>Leave the funds in that account.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">6</div>
+              <div class="step-body">
+                <div class="step-title">Paste the four Polymarket values</div>
+                <div class="step-desc">Setup, Polymarket CLOB keys. All four fields are required. They are stored encrypted on this PC.</div>
+                <ol class="howto-list">
+                  <li>Paste the CLOB <strong>API key</strong>, <strong>secret</strong>, and <strong>passphrase</strong>.</li>
+                  <li>Paste the <strong>wallet private key</strong> (0x plus 64 hex characters) for that same account.</li>
+                  <li>Click <strong>Test Polymarket Credentials</strong>. A success line means the account read worked.</li>
+                  <li>If Polymarket rejects the pasted API key, the app derives CLOB credentials from the private key and retries the balance read.</li>
+                </ol>
+                <div class="step-desc">Never paste these values into chat, email, or a screenshot. Anyone with the private key can sign for that wallet.</div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">7</div>
+              <div class="step-body">
+                <div class="step-title">Install the assistant and the 5-minute job</div>
+                <div class="step-desc">The job is named separately from the BloFin app, so both schedules can exist.</div>
+                <ol class="howto-list">
+                  <li>Open the <strong>Hermes</strong> tab and click <strong>Install Hermes</strong>.</li>
+                  <li>Start the dashboard and gateway if they are not already running.</li>
+                  <li>Click <strong>Auto-Configure Cron</strong>. The job runs every 5 minutes and uses Polymarket CLOB v2.</li>
+                  <li>Use <strong>Open in browser</strong> and confirm the job is scheduled.</li>
+                </ol>
+                <div class="step-desc">Each pass scans crypto 5-minute up/down markets, including markets that end within those five minutes. Until the account is up 50% from its recorded start, the live bet is 5 shares, and only when the edge test passes.</div>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">8</div>
+              <div class="step-body">
+                <div class="step-title">Watch the Trading tab</div>
+                <ol class="howto-list">
+                  <li>Open <strong>Trading</strong>. Cash and portfolio value should match the Polymarket account, in pUSD.</li>
+                  <li>Open positions, when you have them, show on the same desk.</li>
+                  <li>The equity curve fills from that account over time.</li>
+                  <li>Open <strong>Logs</strong> if a cycle looks wrong. Stop the schedule before you add more pUSD.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">9</div>
+              <div class="step-body">
+                <div class="step-title">If something breaks, fix the first error</div>
+                <ol class="howto-list">
+                  <li><strong>Credential test fails:</strong> re-copy all four values. The private key must be 0x plus 64 hex characters. If the API key is stale, leave the private key in place and test again so the app can derive credentials.</li>
+                  <li><strong>Balance is zero:</strong> confirm pUSD is in the Polymarket account for that wallet, including a proxy wallet if you deposited through the Polymarket site.</li>
+                  <li><strong>Nous test fails:</strong> confirm the ~$5 credit posted and paste the full key created after the top-up.</li>
+                  <li><strong>Geoblock says blocked:</strong> go back to step 3. Connect Proton to Mexico or Romania, then reload the geoblock check until it says blocked false. Do not use Poland, Singapore, or Canada.</li>
+                  <li><strong>Dashboard blank:</strong> use <strong>Open in browser</strong> on the Hermes tab, or <strong>Reload desk</strong> on Trading.</li>
+                  <li><strong>No orders yet:</strong> the job is allowed to do nothing when it cannot write down an edge. That is expected.</li>
+                  <li><strong>Computer slept:</strong> wake it, then confirm the gateway is still running.</li>
+                </ol>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      <!-- ── SETUP TAB ─────────────────────────────────────── -->
+      <section id="tab-setup" class="tab-panel">
+        <div class="panel-header">
+          <h1>Credential Setup</h1>
+          <p class="panel-sub">Keys stored encrypted on this PC — never sent anywhere except to Hermes locally.</p>
+        </div>
+        <form id="form-setup" novalidate>
+
+          <!-- AI Credentials -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon ai-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div><div class="card-title">AI Credentials</div><div class="card-desc">Nous Portal — powers Hermes inference & cron</div></div>
+              <a href="#" class="card-help" id="link-nous-portal">Get Portal key ↗</a>
+            </div>
+            <div class="field-group">
+              <div class="field-full cred-file-row">
+                <button type="button" id="btn-load-nous-file" class="btn-secondary">Load from file…</button>
+                <span id="nous-file-path" class="cred-file-path">Raw key, .env, compendium, or JSON</span>
+              </div>
+              <div class="field">
+                <label for="nous-api-key">Portal API Key</label>
+                <div class="input-wrap">
+                  <input type="password" id="nous-api-key" placeholder="Paste key from portal.nousresearch.com" autocomplete="off" spellcheck="false"/>
+                  <button type="button" class="toggle-vis" data-target="nous-api-key">👁</button>
+                </div>
+                <div class="field-hint">Sign in at Nous Portal → Account → API keys. After signup, add at least $5 in credits, then create the key.</div>
+              </div>
+              <div class="field">
+                <label for="nous-model">Nous Model</label>
+                <div class="select-wrap">
+                  <select id="nous-model">
+                    <optgroup label="Free tier">
+                      <option value="tencent/hy3:free">tencent/hy3:free (free)</option>
+                      <option value="upstage/solar-pro4:free">upstage/solar-pro4:free (free)</option>
+                      <option value="meituan/longcat-2.0:free">meituan/longcat-2.0:free (free)</option>
+                      <option value="stepfun/step-3.7-flash:free">stepfun/step-3.7-flash:free (free)</option>
+                      <option value="poolside/laguna-s-2.1:free">poolside/laguna-s-2.1:free (free)</option>
+                      <option value="poolside/laguna-xs-2.1:free">poolside/laguna-xs-2.1:free (free)</option>
+                    </optgroup>
+                    <optgroup label="Paid / subscription">
+                      <option value="tencent/hy3">tencent/hy3</option>
+                      <option value="moonshotai/kimi-k3">moonshotai/kimi-k3</option>
+                      <option value="z-ai/glm-5.2">z-ai/glm-5.2</option>
+                      <option value="stepfun/step-3.7-flash">stepfun/step-3.7-flash</option>
+                      <option value="meituan/longcat-2.0">meituan/longcat-2.0</option>
+                      <option value="upstage/solar-pro4">upstage/solar-pro4</option>
+                      <option value="qwen/qwen3.8-max">qwen/qwen3.8-max</option>
+                      <option value="minimax/minimax-m2.5">minimax/minimax-m2.5</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+              <div class="field-full nous-test-row">
+                <button type="button" id="btn-test-nous" class="btn-secondary" disabled>Test AI Credentials</button>
+                <span id="nous-test-status" class="nous-test-status"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blofin Credentials -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon blofin-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div><div class="card-title">Polymarket CLOB keys</div><div class="card-desc">API key, secret, passphrase, and the wallet private key</div></div>
+              <a href="https://polymarket.com" class="card-help" id="link-blofin-api">Polymarket ↗</a>
+            </div>
+            <div class="field-group">
+              <div class="field-full cred-file-row">
+                <button type="button" id="btn-load-blofin-file" class="btn-secondary">Load from file…</button>
+                <span id="blofin-file-path" class="cred-file-path">Polymarket API 2.txt + private key</span>
+              </div>
+              <div class="field">
+                <label for="blofin-api-key">API Key</label>
+                <div class="input-wrap">
+                  <input type="password" id="blofin-api-key" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"/>
+                  <button type="button" class="toggle-vis" data-target="blofin-api-key">👁</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="blofin-secret-key">Secret Key</label>
+                <div class="input-wrap">
+                  <input type="password" id="blofin-secret-key" placeholder="••••••••••••••••••••••••" autocomplete="off"/>
+                  <button type="button" class="toggle-vis" data-target="blofin-secret-key">👁</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="blofin-passphrase">Passphrase</label>
+                <div class="input-wrap">
+                  <input type="password" id="blofin-passphrase" placeholder="Your API passphrase" autocomplete="off"/>
+                  <button type="button" class="toggle-vis" data-target="blofin-passphrase">👁</button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="poly-private-key">Private key</label>
+                <div class="input-wrap">
+                  <input type="password" id="poly-private-key" placeholder="0x… wallet private key" autocomplete="off"/>
+                  <button type="button" class="toggle-vis" data-target="poly-private-key">👁</button>
+                </div>
+              </div>
+              <div class="field-full" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:6px">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text)">Paper notes only</div>
+                  <div style="font-size:11px;color:var(--text3)">Polymarket orders are live. Leave this off. The cron stays at the 5-share minimum until the account is well ahead.</div>
+                </div>
+                <label class="toggle-switch" style="position:relative;display:inline-block;width:38px;height:22px;cursor:pointer">
+                  <input type="checkbox" id="blofin-demo-mode" style="opacity:0;width:0;height:0"/>
+                  <span class="toggle-slider" style="position:absolute;inset:0;background:var(--border2);border-radius:22px;transition:0.2s"></span>
+                </label>
+              </div>
+              <div class="field-full nous-test-row">
+                <button type="button" id="btn-test-blofin" class="btn-secondary" disabled>Test Polymarket Credentials</button>
+                <span id="blofin-test-status" class="nous-test-status"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <div id="save-status" class="save-status"></div>
+            <button type="submit" id="btn-save" class="btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1 2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save & Write Compendium
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ── HERMES TAB ─────────────────────────────────────── -->
+      <section id="tab-hermes" class="tab-panel">
+        <div class="panel-header">
+          <h1>Hermes Control</h1>
+          <p class="panel-sub">Install Hermes, start its dashboard, and set it to trade on your Polymarket account.</p>
+        </div>
+
+        <!-- Step cards -->
+        <div class="steps-flow">
+
+        <!-- Step 0: Defender exclusion -->
+          <div class="step-card" id="step-defender">
+            <div class="step-num" style="background:rgba(255,123,114,0.15);border-color:rgba(255,123,114,0.4);color:#ff7b72">0</div>
+            <div class="step-body">
+              <div class="step-title">🛡 Whitelist in Windows Defender <span style="color:var(--warn);font-size:11px;font-weight:500">(do this BEFORE install)</span></div>
+              <div class="step-desc">Windows Defender flags Hermes' installer as <code>Trojan:Win32/Commando.A!ml</code> — this is a <strong>known false positive</strong> caused by the <code>iex (irm ...)</code> PowerShell pattern. Click below to add the sandboxed Hermes folder as a Defender exclusion. A UAC admin prompt will appear — click <strong>Yes</strong>.</div>
+              <div class="step-actions">
+                <button id="btn-add-exclusion" class="btn-primary">Add Defender Exclusion</button>
+                <span id="exclusion-status" class="step-status"></span>
+              </div>
+              <div id="exclusion-manual" class="hidden" style="margin-top:8px;font-size:11px;color:var(--warn)">
+                Auto-add failed. Add manually: <strong>Windows Security → Virus &amp; threat protection → Manage settings → Exclusions → Add folder</strong> and add: <code id="exclusion-path-display"></code>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 1: Install -->
+          <div class="step-card" id="step-install">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Install Hermes (Sandboxed)</div>
+              <div class="step-desc">Downloads and installs Hermes <strong>inside this app only</strong> — never touches your system PATH or any system folder. Lives in: <code id="hermes-home-display">…loading…</code></div>
+              <div class="step-status" id="hermes-install-status">Checking...</div>
+              <div class="step-actions">
+                <button id="btn-install-hermes" class="btn-primary" disabled>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Install Hermes
+                </button>
+                <span id="hermes-version-tag" class="version-chip hidden"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Write compendium -->
+          <div class="step-card" id="step-compendium">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <div class="step-title">Write Credentials File</div>
+              <div class="step-desc">Saves your Polymarket keys to <code id="compendium-path-display">~/Downloads/My Polymarket API Compendium.txt</code> — the file Hermes reads.</div>
+              <div class="step-actions">
+                <button id="btn-write-compendium" class="btn-secondary">Write Compendium File</button>
+                <span id="compendium-status" class="step-ok hidden">✓ Written</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Start dashboard -->
+          <div class="step-card" id="step-dashboard">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <div class="step-title">Start Hermes Dashboard + Gateway</div>
+              <div class="step-desc">Runs <code>hermes dashboard</code> on port <strong>9219</strong> and starts the <strong>gateway</strong> (required for cron jobs to fire).</div>
+              <div class="step-actions">
+                <button id="btn-start-dashboard" class="btn-launch-start">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Start Dashboard + Gateway
+                </button>
+                <button id="btn-stop-dashboard" class="btn-launch-stop hidden">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  Stop Dashboard
+                </button>
+                <span id="dashboard-status" class="step-status">Not running</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Configure cron -->
+          <div class="step-card" id="step-cron">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <div class="step-title">Configure the 5-minute job</div>
+              <div class="step-desc">Auto-creates the <code>poly-5m-updown</code> cron in Hermes with the full trading prompt.</div>
+              <div class="step-actions">
+                <button id="btn-configure-cron" class="btn-primary" disabled>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  Auto-Configure Cron
+                </button>
+                <span id="cron-status" class="step-status"></span>
+              </div>
+              <!-- Manual fallback: show the prompt -->
+              <div id="manual-prompt-wrap" class="hidden">
+                <div class="field-hint" style="margin-top:10px;color:var(--warn)">API auto-config unavailable. Copy this prompt into the Hermes dashboard manually:</div>
+                <div class="prompt-box">
+                  <button id="btn-copy-prompt" class="copy-btn-sm">Copy Prompt</button>
+                  <pre id="cron-prompt-text"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proton VPN helper -->
+        <div class="card" style="margin-top:18px">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(34,197,94,0.12);color:#22c55e">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div><div class="card-title">Proton VPN Helper</div><div class="card-desc">Guided free VPN flow to reach an allowed Blofin country.</div></div>
+          </div>
+          <div class="field-group">
+            <p class="step-desc">If Polymarket blocks orders from this network, stop. This app will not place them.</p>
+            <select id="vpn-country" hidden></select>
+            <button type="button" id="btn-vpn-guide" hidden></button>
+            <div id="vpn-status" hidden></div>
+          </div>
+        </div>
+
+        <!-- Embedded Hermes Dashboard webview -->
+        <div id="dashboard-embed-wrap" class="hidden">
+          <div class="dash-header">
+            <div class="dash-title">
+              <div class="live-dot"></div>
+              Hermes Dashboard — <span id="dash-url">http://127.0.0.1:9219</span>
+            </div>
+            <div class="dash-controls">
+              <button id="btn-reload-dash" class="btn-ghost-sm">↺ Reload</button>
+              <button id="btn-open-dash-external" class="btn-ghost-sm">↗ Open in Browser</button>
+            </div>
+          </div>
+          <webview id="hermes-webview"
+            class="webview-parked"
+            src="about:blank"
+            style="width:100%;height:480px;border:none;border-radius:0 0 var(--radius) var(--radius);"
+            allowpopups
+            partition="hermes">
+          </webview>
+        </div>
+
+      </section>
+
+      <!-- ── TRADING TAB ───────────────────────────────────── -->
+      <section id="tab-trading" class="tab-panel">
+        <div id="trading-section-header" class="panel-header trading-header">
+          <div>
+            <h1>Live Trading</h1>
+            <p class="panel-sub">Positions, equity, signals, and voice — live from your Polymarket account.</p>
+          </div>
+            <button type="button" id="btn-reload-trading" class="btn-secondary">Reload desk</button>
+          </div>
+        <div id="trading-section-monitor" class="trading-monitor">
+          <div class="monitor-item">
+            <div class="monitor-label">Trading dashboard</div>
+            <div class="monitor-value" id="trading-dashboard-status">Not loaded yet</div>
+          </div>
+          <div class="monitor-item">
+            <div class="monitor-label">Last activity</div>
+            <div class="monitor-value" id="trading-activity-status">Waiting for Hermes</div>
+          </div>
+          <div class="monitor-item">
+            <div class="monitor-label">What to confirm</div>
+            <div class="monitor-value monitor-hint">
+              1. Equity updates in the dashboard<br>
+              2. Recent Activity shows a Hermes cron tick<br>
+              3. Open positions appear when a trade is placed<br>
+              4. If the dashboard is blank, open Hermes dashboard in browser from Hermes tab
+            </div>
+          </div>
+        </div>
+        <div id="trading-webview-wrap" class="trading-webview-wrap">
+          <webview
+            id="trading-webview"
+            class="webview-parked"
+            partition="persist:blohunter-trading"
+            allowpopups
+            webpreferences="contextIsolation=yes, nodeIntegration=no">
+          </webview>
+        </div>
+        <!-- Section quick-nav: clicking a button scrolls that BloHunter desk section into view -->
+        <nav id="trading-section-nav" class="trading-section-nav" aria-label="Trading sections">
+          <button type="button" class="trading-section-nav-btn" data-desk-scroll=".summary-panel">Account Equity</button>
+          <button type="button" class="trading-section-nav-btn" data-desk-scroll=".activity-panel">Activity</button>
+          <button type="button" class="trading-section-nav-btn" data-desk-scroll='[data-resize-panel="openPositions"]'>Open Positions</button>
+          <button type="button" class="trading-section-nav-btn" data-desk-scroll=".closed-trades-48h-section">Closed Positions</button>
+          <button type="button" class="trading-section-nav-btn" data-desk-scroll='[data-resize-panel="growth"]'>Account Growth</button>
+        </nav>
+      </section>
+
+      <!-- ── LOGS TAB ──────────────────────────────────────── -->
+      <section id="tab-logs" class="tab-panel">
+        <div class="panel-header logs-header">
+          <div><h1>Live Logs</h1><p class="panel-sub">Output from Hermes and KnightTrader Poly.</p></div>
+          <div class="logs-actions">
+            <button id="btn-autoscroll" class="btn-toggle active">⇊ Auto-scroll</button>
+            <button id="btn-clear-logs" class="btn-ghost">Clear</button>
+          </div>
+        </div>
+        <div id="log-container">
+          <div id="log-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div>No logs yet.</div>
+          </div>
+          <div id="log-list"></div>
+        </div>
+      </section>
+
+      <!-- ── SETTINGS TAB ───────────────────────────────────── -->
+      <section id="tab-settings" class="tab-panel">
+        <div class="panel-header"><h1>Settings</h1><p class="panel-sub">App preferences and quick links.</p></div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><div class="card-title">Quick Links</div></div>
+          <div class="links-grid">
+            <button class="link-card" id="link-blofin-dashboard">📊 Polymarket</button>
+            <button class="link-card" id="link-blofin-api-page">🔑 Polymarket API</button>
+            <button class="link-card" id="link-nous-portal-settings">🤖 Nous Portal</button>
+            <button class="link-card" id="link-hermes-dashboard">🖥 Hermes Dashboard</button>
+            <button class="link-card" id="link-hermes-docs">📚 Hermes Docs</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">🔒</div><div class="card-title">Membership</div></div>
+          <div class="about-body">
+            <div class="about-row"><span>Status</span><span id="membership-status">Checking...</span></div>
+            <div class="about-row"><span>Account</span><span id="membership-email">-</span></div>
+            <div class="form-actions" style="padding:0">
+              <button type="button" id="btn-renew-membership" class="btn-secondary">Renew Membership</button>
+              <button type="button" id="btn-auth-logout" class="btn-secondary">Sign out</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-icon">ℹ</div><div class="card-title">About</div></div>
+          <div class="about-body">
+            <div class="about-row"><span>App</span><span id="about-app-version">KnightTrader Poly</span></div>
+            <div class="about-row"><span>Engine</span><span>Electron 28 + Node.js</span></div>
+            <div class="about-row"><span>Storage</span><span>AES-256-CBC encrypted</span></div>
+            <div class="about-row"><span>Hermes</span><span id="about-hermes-ver">Checking...</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="border-color: var(--error)">
+          <div class="card-header"><div class="card-icon" style="color: var(--error)">⚠</div><div class="card-title">Danger Zone</div></div>
+          <div class="about-body">
+            <div class="step-desc" style="margin-bottom:10px">This will wipe local credentials, Hermes sandbox, trading cache, and webview data. The app will restart automatically.</div>
+            <button type="button" id="btn-factory-reset" class="btn-primary" style="background: var(--error); border-color: var(--error);">Wipe &amp; Reinstall</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  <script src="trading-system.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self'; font-src https://fonts.gstatic.com data:;" />
+  <title>Critical Update Required</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #11161d;
+      --border: #1f2731;
+      --text: #e6edf3;
+      --text2: #9aa7b4;
+      --accent: #f5a623;
+      --accent2: #ff6b35;
+      --good: #3fb950;
+      --error: #f85149;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+      overflow: hidden;
+    }
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 28px 30px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(245, 166, 35, 0.12);
+      border: 1px solid rgba(245, 166, 35, 0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    p.msg {
+      margin: 0 0 14px;
+      color: var(--text2);
+      font-size: 13.5px;
+      line-height: 1.55;
+      max-width: 380px;
+    }
+    .ver {
+      margin: 0 0 20px;
+      font-size: 12px;
+      color: var(--text2);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .ver strong { color: var(--text); }
+    .actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 280px; }
+    button {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--accent);
+      color: #1a1206;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 0.15s, opacity 0.15s;
+    }
+    button:hover:not(:disabled) { filter: brightness(1.08); }
+    button:disabled { opacity: 0.6; cursor: default; }
+    button.secondary {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border);
+      font-weight: 600;
+    }
+    button.secondary:hover:not(:disabled) { color: var(--text); border-color: #2f3a47; }
+    .status {
+      margin-top: 12px;
+      min-height: 16px;
+      font-size: 11.5px;
+      color: var(--text2);
+    }
+    .status.err { color: var(--error); }
+    .status.ok { color: var(--good); }
+    .foot {
+      margin-top: 16px;
+      font-size: 11px;
+      color: #5c6a76;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">⚠ Critical update required</div>
+    <h1>An important update is required</h1>
+    <p class="msg" id="msg">A critical update is required to continue using KnightTrader BloFin.</p>
+    <p class="ver">Your version: <strong id="ver">—</strong> · minimum required: <strong id="min">—</strong></p>
+    <div class="actions">
+      <button id="update">Update &amp; Restart</button>
+      <button id="manual" class="secondary">Download installer manually</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="foot">This update is required for all users. The app cannot be used until the update is installed.</div>
+  </div>
+  <script src="force-update.js"></script>
+</body>
+</html>

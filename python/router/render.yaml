@@ -1,0 +1,15 @@
+# Render.com free tier deployment for free-claude-router
+services:
+  - type: web
+    name: free-claude-router
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8082
+    healthCheckPath: /health
+    autoDeploy: true
+    # Free tier: 750 hours/month, spins down after 15 min inactivity
+    # First request after spin-down takes ~30s to wake up

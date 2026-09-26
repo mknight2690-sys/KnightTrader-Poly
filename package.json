@@ -1,0 +1,88 @@
+{
+  "name": "knight-trader-poly",
+  "version": "1.0.0",
+  "description": "KnightTrader Poly - local Polymarket assistant",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --publish always",
+    "build:mac": "electron-builder --mac --publish always"
+  },
+  "build": {
+    "appId": "com.knighttrader.poly",
+    "productName": "KnightTrader Poly",
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "KnightTrader-Poly-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": true,
+      "include": "nsis/installer.nsh"
+    },
+    "mac": {
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.finance",
+      "artifactName": "KnightTrader-Poly-${version}-${arch}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "mknight2690-sys",
+      "repo": "KnightTrader-Poly",
+      "releaseType": "release"
+    },
+    "generateUpdatesFilesForAllChannels": true,
+    "extraResources": [
+      {
+        "from": "python/",
+        "to": "python/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "ethers": "^6.15.0",
+    "electron-updater": "^6.8.9",
+    "eventsource": "^5.1.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "electron": "28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "keywords": [
+    "electron",
+    "trading",
+    "hermes",
+    "polymarket"
+  ],
+  "author": "KnightTrader",
+  "license": "MIT",
+  "allowScripts": {
+    "electron@28.3.3": true
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "mknight2690-sys",
+    "repo": "KnightTrader-Poly",
+    "releaseType": "release"
+  }
+}

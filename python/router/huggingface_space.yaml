@@ -1,0 +1,16 @@
+# Hugging Face Spaces free tier deployment
+# Create a new Space at https://huggingface.co/new-space
+# Select "Docker" as the SDK, then upload these files
+#
+# Or use the Hugging Face Hub CLI:
+# huggingface-cli login
+# huggingface-cli repo create --type space <username>/free-claude-router
+# git push hf main
+
+# For manual creation:
+# 1. Go to https://huggingface.co/new-space
+# 2. Name: free-claude-router
+# 3. SDK: Docker
+# 4. Hardware: CPU basic (free)
+# 5. Visibility: Public (free) or Private
+# 4. Upload: Dockerfile, requirements.txt, router.py, translate.py, providers.json, keys_*.txt

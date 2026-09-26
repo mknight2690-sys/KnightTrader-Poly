@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knightly Swarm - AI Trading Hedge Fund</title>
+    <link rel="stylesheet" href="/dashboard/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="brand">
+                    <span class="brand-icon">⚔️</span>
+                    <span class="brand-name">Knightly Swarm</span>
+                </h1>
+                <div class="status-bar">
+                    <div class="status-item trading" data-status="false">
+                        <i data-lucide="trending-up"></i>
+                        <span>Trading</span>
+                    </div>
+                    <div class="status-item connected" data-status="false">
+                        <i data-lucide="activity"></i>
+                        <span>Connected</span>
+                    </div>
+                    <div class="status-item router" data-status="false">
+                        <i data-lucide="router"></i>
+                        <span>Router</span>
+                    </div>
+                    <div class="status-instance" data-status="true">
+                        <i data-lucide="shield-check"></i>
+                        <span>Single Instance</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Pipeline Graph Section -->
+            <section class="pipeline-section">
+                <h2>Agent Pipeline</h2>
+                <div class="pipeline-graph" id="pipelineGraph">
+                    <svg width="100%" height="200" viewBox="0 0 1200 200">
+                        <!-- Background gradient -->
+                        <defs>
+                            <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#0a0a0f;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a1a2e;stop-opacity:1" />
+                            </linearGradient>
+                            <!-- Glow effect -->
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <!-- Particle effect -->
+                            <filter id="particle">
+                                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="turbulence"/>
+                                <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Pipeline nodes -->
+                        <g id="nodes">
+                            <!-- Scanner -->
+                            <g class="node" data-agent="scanner" transform="translate(100, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">🔍</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Scanner</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="scannerStatus">idle</text>
+                            </g>
+
+                            <!-- Director -->
+                            <g class="node" data-agent="director" transform="translate(300, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">👑</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Director</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="directorStatus">idle</text>
+                            </g>
+
+                            <!-- Quant -->
+                            <g class="node" data-agent="quant" transform="translate(500, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">📊</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Quant</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="quantStatus">idle</text>
+                            </g>
+
+                            <!-- Risk -->
+                            <g class="node" data-agent="risk" transform="translate(700, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">🛡️</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Risk</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="riskStatus">idle</text>
+                            </g>
+
+                            <!-- Execution -->
+                            <g class="node" data-agent="execution" transform="translate(900, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">⚔️</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Execution</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="executionStatus">idle</text>
+                            </g>
+
+                            <!-- Trade -->
+                            <g class="node" data-agent="trade" transform="translate(1100, 100)">
+                                <circle r="30" fill="#475569" stroke="#64748b" stroke-width="2"/>
+                                <text y="5" text-anchor="middle" fill="white" font-size="20">💰</text>
+                                <text y="-40" text-anchor="middle" fill="#94a3b8" font-size="12">Trade</text>
+                                <text y="-55" text-anchor="middle" fill="#64748b" font-size="10" id="tradeStatus">idle</text>
+                            </g>
+                        </g>
+
+                        <!-- Connections -->
+                        <g id="connections">
+                            <path d="M 130 100 L 270 100" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                            <path d="M 330 100 L 470 100" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                            <path d="M 530 100 L 670 100" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                            <path d="M 730 100 L 870 100" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                            <path d="M 930 100 L 1070 100" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                        </g>
+
+                        <!-- Arrow marker -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                    <div class="flow-indicator" id="flowIndicator"></div>
+                </div>
+            </section>
+
+            <!-- Metrics Section -->
+            <section class="metrics-section">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="trending-up"></i>
+                            <span>Equity</span>
+                        </div>
+                        <div class="metric-value" id="equity">$0.00</div>
+                        <div class="metric-change" id="equityChange">+0.00%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="wallet"></i>
+                            <span>Balance</span>
+                        </div>
+                        <div class="metric-value" id="balance">$0.00</div>
+                        <div class="metric-change neutral">0.00%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="bar-chart-3"></i>
+                            <span>P&L</span>
+                        </div>
+                        <div class="metric-value" id="pnl">$0.00</div>
+                        <div class="metric-change neutral">0.00%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="briefcase"></i>
+                            <span>Positions</span>
+                        </div>
+                        <div class="metric-value" id="positions">0</div>
+                        <div class="metric-change neutral">0 open</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="repeat"></i>
+                            <span>Daily Trades</span>
+                        </div>
+                        <div class="metric-value" id="dailyTrades">0</div>
+                        <div class="metric-change neutral">0 today</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i data-lucide="target"></i>
+                            <span>Win Rate</span>
+                        </div>
+                        <div class="metric-value" id="winRate">0%</div>
+                        <div class="metric-change neutral">0/0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3>Equity Curve</h3>
+                    <canvas id="equityChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Asset Universe Section -->
+            <section class="assets-section">
+                <div class="section-header">
+                    <h2>Asset Universe (500)</h2>
+                    <div class="controls">
+                        <button id="refreshAssets" class="btn-icon">
+                            <i data-lucide="refresh-cw"></i>
+                        </button>
+                        <input type="text" id="assetSearch" placeholder="Search assets...">
+                    </div>
+                </div>
+                <div class="assets-table-container">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Price</th>
+                                <th>24h Change</th>
+                                <th>Signal</th>
+                                <th>Volume</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assetsTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Agent Logs Section -->
+            <section class="logs-section">
+                <div class="section-header">
+                    <h2>Agent Logs</h2>
+                    <button id="clearLogs" class="btn-icon">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+                <div class="logs-container" id="logsContainer">
+                    <!-- Dynamic content -->
+                </div>
+            </section>
+
+            <!-- Trade History Section -->
+            <section class="trades-section">
+                <div class="section-header">
+                    <h2>Trade History</h2>
+                    <button id="clearTrades" class="btn-icon">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+                <div class="trades-table-container">
+                    <table class="trades-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>P&L</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradesTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <button id="toggleTrading" class="control-btn primary">
+                <i data-lucide="play"></i>
+                <span>Start Trading</span>
+            </button>
+            <button id="emergencyStop" class="control-btn danger">
+                <i data-lucide="square"></i>
+                <span>Emergency Stop</span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="system-info">
+                    <span>Uptime: <span id="uptime">00:00:00</span></span>
+                    <span>Assets: <span id="assetCount">0</span>/500</span>
+                    <span>Agents: <span id="activeAgents">0</span> active</span>
+                </div>
+                <div class="connection-status">
+                    <span id="connectionStatus">Connecting...</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/dashboard/app.js"></script>
+</body>
+</html>

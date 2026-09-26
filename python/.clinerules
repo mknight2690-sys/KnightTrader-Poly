@@ -1,0 +1,4 @@
+- NEVER hardcode production BloFin API keys or secrets directly inside code files.
+- ALWAYS enforce strict type hints and docstrings across all modules in core/.
+- DO NOT modify PyTorch neural network architectures without updating input/output dimension assertions.
+- ALWAYS verify syntax using `python -m py_compile <file>` after editing Python files.
