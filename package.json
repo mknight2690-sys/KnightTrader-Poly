@@ -1,6 +1,6 @@
 {
   "name": "knight-trader-poly",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "KnightTrader Poly - local Polymarket assistant",
   "main": "main.js",
   "scripts": {

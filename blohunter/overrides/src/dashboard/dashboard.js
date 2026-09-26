@@ -470,7 +470,7 @@ function renderDashboard(snapshot) {
 
   if (!accountRows.length) {
     accountRows.push({
-      tag: 'USDT',
+      tag: 'USDC',
       value: formatUsd(balances.totalAvailable || 0),
       inline: true,
     });
@@ -478,18 +478,18 @@ function renderDashboard(snapshot) {
 
   renderMetricCard('accountValueCard', [
     {
-      tag: 'USDT',
+      tag: 'USDC',
       value: formatUsd(balances.totalEquity || 0),
       inline: true,
     },
   ]);
   renderMetricCard('accountBalanceCard', accountRows);
   renderMetricCard('exposureCard', [
-    { tag: 'USDT', value: formatUsd(exposure.totalMargin || 0), inline: true },
+    { tag: 'USDC', value: formatUsd(exposure.totalMargin || 0), inline: true },
   ]);
   renderMetricCard('dailyPnlCard', [
     {
-      tag: 'USDT',
+      tag: 'USDC',
       value: formatUsd(performance.dailyPnl || 0),
       valueClass: directionClass(performance.dailyPnl || 0),
       inline: true,
@@ -497,7 +497,7 @@ function renderDashboard(snapshot) {
   ]);
   renderMetricCard('monthlyPnlCard', [
     {
-      tag: 'USDT',
+      tag: 'USDC',
       value: formatUsd(performance.monthlyPnl || 0),
       valueClass: directionClass(performance.monthlyPnl || 0),
       inline: true,

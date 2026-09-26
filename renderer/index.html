@@ -133,7 +133,7 @@
             <div class="preflight-title">Before you start — do not skip this</div>
             <ol class="howto-list howto-list--tight">
               <li>You need <strong>Windows 11</strong> or an <strong>Apple Silicon Mac</strong> on macOS 11 or later.</li>
-              <li>You need a <strong>Polymarket account</strong> that can hold <strong>pUSD</strong>. Start with an amount you can lose in full.</li>
+              <li>You need a <strong>Polymarket account</strong> that can hold <strong>USDC</strong>. Start with an amount you can lose in full.</li>
               <li>You need four values from that account: <strong>API key</strong>, <strong>secret</strong>, <strong>passphrase</strong>, and the <strong>wallet private key</strong>.</li>
               <li>You need a <strong>Nous Portal</strong> key. Nous charges a one-time ~$5 credit top-up, paid to Nous, before it will create one.</li>
               <li>Plan on <strong>30–60 minutes</strong> the first time. Keep the laptop plugged in.</li>
@@ -206,11 +206,11 @@
             <div class="step-card">
               <div class="step-num">5</div>
               <div class="step-body">
-                <div class="step-title">Put pUSD on Polymarket</div>
+                <div class="step-title">Put USDC on Polymarket</div>
                 <div class="step-desc">The trading desk reads the Polymarket account you connect. Deposit only what you can lose.</div>
                 <ol class="howto-list">
                   <li>Open <strong>polymarket.com</strong> and sign in to the account you will trade.</li>
-                  <li>Deposit <strong>pUSD</strong> using Polymarket's own deposit flow. Collateral on CLOB v2 is pUSD, not USDC.e.</li>
+                  <li>Deposit <strong>USDC</strong> with Polymarket's own deposit flow. The balance that matters is the USDC in the Polymarket wallet.</li>
                   <li>Leave the funds in that account.</li>
                 </ol>
               </div>
@@ -251,10 +251,10 @@
               <div class="step-body">
                 <div class="step-title">Watch the Trading tab</div>
                 <ol class="howto-list">
-                  <li>Open <strong>Trading</strong>. Cash and portfolio value should match the Polymarket account, in pUSD.</li>
+                  <li>Open <strong>Trading</strong>. Cash and portfolio value should match the Polymarket wallet, in USDC.</li>
                   <li>Open positions, when you have them, show on the same desk.</li>
                   <li>The equity curve fills from that account over time.</li>
-                  <li>Open <strong>Logs</strong> if a cycle looks wrong. Stop the schedule before you add more pUSD.</li>
+                  <li>Open <strong>Logs</strong> if a cycle looks wrong. Stop the schedule before you add more USDC.</li>
                 </ol>
               </div>
             </div>
@@ -265,7 +265,7 @@
                 <div class="step-title">If something breaks, fix the first error</div>
                 <ol class="howto-list">
                   <li><strong>Credential test fails:</strong> re-copy all four values. The private key must be 0x plus 64 hex characters. If the API key is stale, leave the private key in place and test again so the app can derive credentials.</li>
-                  <li><strong>Balance is zero:</strong> confirm pUSD is in the Polymarket account for that wallet, including a proxy wallet if you deposited through the Polymarket site.</li>
+                  <li><strong>Balance is zero:</strong> confirm USDC is in the Polymarket wallet for that account. The signer address by itself is often empty.</li>
                   <li><strong>Nous test fails:</strong> confirm the ~$5 credit posted and paste the full key created after the top-up.</li>
                   <li><strong>Geoblock says blocked:</strong> go back to step 3. Connect Proton to Mexico or Romania, then reload the geoblock check until it says blocked false. Do not use Poland, Singapore, or Canada.</li>
                   <li><strong>Dashboard blank:</strong> use <strong>Open in browser</strong> on the Hermes tab, or <strong>Reload desk</strong> on Trading.</li>
